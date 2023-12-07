@@ -5,7 +5,6 @@ pub fn solution(input: &str) -> u64 {
     let seeds = parse_seeds(paragraphs.next().unwrap());
     let range_maps: Vec<_> = paragraphs.map(parse_range_map).collect();
     seeds.map(|seed| {
-        println!();
         range_maps.iter().fold(seed, |acc, range_map| range_map.get(acc))
     }).min().unwrap()
 }
