@@ -25,7 +25,7 @@ pub fn solution(input: &str) -> u64 {
         .find_map(|(i, row)| row.iter().position(|block| *block == Start).map(|j| (i, j)))
         .expect("No starting block found");
 
-    dbg!(&start_i, &start_j);
+    // dbg!(&start_i, &start_j);
 
     let mut adjacents = [(-1, 0, Bottom), (0, 1, Left), (1, 0, Top), (0, -1, Right)]
         .iter()
@@ -46,26 +46,9 @@ pub fn solution(input: &str) -> u64 {
     let mut right = adjacents.next().expect("Only one adjacent pipe");
     assert_eq!(adjacents.next(), None, "Too many adjacent pipes");
     blocks[start_i][start_j] = MainPipe(left.2.opposite(), right.2.opposite());
-    dbg!(&blocks[start_i][start_j]);
-    blocks.iter().for_each(|row| {
-        row.iter().for_each(|b| {
-            print!(
-                "{}",
-                match *b {
-                    Ground => '.',
-                    Block::TB => '┃',
-                    Block::RL => '━',
-                    Block::TR => '┗',
-                    Block::RB => '┏',
-                    Block::BL => '┓',
-                    Block::LT => '┛',
-                    Start => 'x',
-                    _ => 'U',
-                }
-            )
-        });
-        println!()
-    });
+    // dbg!(&blocks[start_i][start_j]);
+    
+    // display_map(&blocks);
 
     while left.0 != right.0 || left.1 != right.1 {
         for (i, j, side) in [&mut left, &mut right] {
@@ -92,25 +75,7 @@ pub fn solution(input: &str) -> u64 {
         })
     });
 
-    blocks.iter().for_each(|row| {
-        row.iter().for_each(|b| {
-            print!(
-                "{}",
-                match *b {
-                    Ground => '.',
-                    Block::TB => '┃',
-                    Block::RL => '━',
-                    Block::TR => '┗',
-                    Block::RB => '┏',
-                    Block::BL => '┓',
-                    Block::LT => '┛',
-                    Start => 'x',
-                    _ => 'U',
-                }
-            )
-        });
-        println!()
-    });
+    // display_map(&blocks);
 
     let mut result = 0;
     for row in &mut blocks {
@@ -147,25 +112,7 @@ pub fn solution(input: &str) -> u64 {
             }
         }
     }
-    blocks.iter().for_each(|row| {
-        row.iter().for_each(|b| {
-            print!(
-                "{}",
-                match *b {
-                    Ground => '.',
-                    Block::TB => '┃',
-                    Block::RL => '━',
-                    Block::TR => '┗',
-                    Block::RB => '┏',
-                    Block::BL => '┓',
-                    Block::LT => '┛',
-                    Start => 'x',
-                    _ => 'U',
-                }
-            )
-        });
-        println!()
-    });
+    // display_map(&blocks);
 
     result
 }
@@ -187,4 +134,27 @@ L7JLJL-JLJLJL--JLJ.L"#
         ),
         10
     );
+}
+
+#[allow(unused)]
+fn display_map(blocks: &Vec<Vec<Block>>) {
+    blocks.iter().for_each(|row| {
+        row.iter().for_each(|b| {
+            print!(
+                "{}",
+                match *b {
+                    Ground => '.',
+                    Block::TB => '┃',
+                    Block::RL => '━',
+                    Block::TR => '┗',
+                    Block::RB => '┏',
+                    Block::BL => '┓',
+                    Block::LT => '┛',
+                    Start => 'x',
+                    _ => 'U',
+                }
+            )
+        });
+        println!()
+    });
 }
