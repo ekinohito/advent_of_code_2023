@@ -47,60 +47,74 @@ pub fn solution(input: &str) -> u64 {
     assert_eq!(adjacents.next(), None, "Too many adjacent pipes");
     blocks[start_i][start_j] = Pipe(left.2.opposite(), right.2.opposite());
     dbg!(&blocks[start_i][start_j]);
-    let mut masks = vec![vec![]; blocks.len()];
 
     while left.0 != right.0 || left.1 != right.1 {
         for (i, j, side) in [&mut left, &mut right] {
-            // dbg!(&i, &j, &side);
-            masks[*i].push(*j);
-
-            let Pipe(first, second) = blocks[*i][*j] else {panic!("Lost the pipe")};
-            let next_side = if *side == first {
-                second
-            } else {
-                first
+            let Pipe(first, second) = blocks[*i][*j] else {
+                panic!("Lost the pipe")
             };
+            blocks[*i][*j] = MainPipe(first, second);
+            let next_side = if *side == first { second } else { first };
             let (di, dj) = next_side.to_direction();
             *i = i.checked_add_signed(di).unwrap();
             *j = j.checked_add_signed(dj).unwrap();
             *side = next_side.opposite();
         }
     }
-    masks.iter_mut().enumerate().for_each(|(i, mask)| {
-        let mut start = None;
-        let mut edges = 0;
-        mask.sort();
-        mask.retain(|elem| {
-            let block = blocks[i][*elem];
-            if block == Pipe(Top, Bottom)  {
-                return true;
-            }
-            if block == Pipe(Right, Left) {
-                return false;
-            }
 
-            let Some(start_block) = start else {
-                start = Some(block);
-                return edges % 2 == 1;
-            };
-            start = None;
-            if i == 112 {
-                // dbg!(&i, &elem, &start_block, &block, &edges);
+    blocks.iter_mut().for_each(|row| {
+        row.iter_mut().for_each(|block| {
+            *block = if let MainPipe(s1, s2) = block {
+                Pipe(*s1, *s2)
+            } else {
+                Ground
             }
-            return match (start_block, block) {
-                (Block::TR, Block::LT) | (Block::RB, Block::BL) => false,
-                (Block::TR, Block::BL) | (Block::RB, Block::LT) => {
-                    edges += 1;
-                    edges % 2 == 0
-                }
-                _ => {println!("{:?}", (i, elem, start_block, block, edges)); false},
-            }
-        });
+        })
     });
-    masks.iter().map(|mask| {
-        mask.chunks_exact(2).map(|chunk| {
-            let [start, end] = chunk else {unreachable!()};
-            (end - start - 1) as u64
-        }).sum::<u64>()
-    }).sum() 
+
+
+    let mut result = 0;
+    for row in &mut blocks {
+        let mut within_loop = false;
+        let mut start = None;
+        for block in row {
+            match block {
+                Ground => {
+                    if within_loop {
+                        result += 1;
+                        *block = Start;
+                    }
+                },
+                Pipe(Top, Bottom) => {
+                    within_loop = !within_loop;
+                }
+                Pipe(Right, Left) => {},
+                Pipe(side_1, side_2) => {
+                    let direction = if *side_1 == Top || *side_2 == Top {Top} else {Bottom};
+                    if let Some(start_direction) = start {
+                        if start_direction != direction {
+                            within_loop = !within_loop;
+                        }
+                        start = None;
+                    } else {
+                        start = Some(direction);
+                    }
+                },
+                _ => unreachable!()
+            }
+        }
+    }
+    blocks.iter().for_each(|row| {row.iter().for_each(|b| print!("{}", match *b {
+        Ground => '.',
+        Block::TB => '┃',
+        Block::RL => '━',
+        Block::TR => '┗',
+        Block::RB => '┏',
+        Block::BL => '┓',
+        Block::LT => '┛',
+        Start => 'x',
+        _ => 'U',
+    })); println!()});
+
+    result
 }

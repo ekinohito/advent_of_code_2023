@@ -33,6 +33,7 @@ pub enum Block {
     Ground,
     Start,
     Pipe(Side, Side),
+    MainPipe(Side, Side),
 }
 
 impl Block {
