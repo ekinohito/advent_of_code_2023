@@ -4,6 +4,7 @@ pub enum Mark {
     Damaged,
     Operational,
 }
+
 use Mark::*;
 
 pub fn parse_line(line: &str) -> (Box<[Mark]>, Box<[usize]>) {
@@ -25,7 +26,7 @@ pub fn parse_line(line: &str) -> (Box<[Mark]>, Box<[usize]>) {
 pub fn possible_combinations(marks: &[Mark], current_group: usize, groups: &[usize]) -> usize {
     let Some(current_mark) = marks.first().cloned() else {
         let [group] = groups else {
-            return if current_group == 0 { 1 } else { 0 };
+            return if current_group == 0 && groups.is_empty() { 1 } else { 0 };
         };
         return if current_group == *group { 1 } else { 0 };
     };
@@ -53,16 +54,16 @@ pub fn possible_combinations(marks: &[Mark], current_group: usize, groups: &[usi
 
 #[test]
 fn test_solution() {
-    // assert_eq!(solution("#.#.### 1,1,3"), 1);
-    // assert_eq!(solution("#.#.### 1,2,3"), 0);
+    assert_eq!(solution("#.#.### 1,1,3"), 1);
+    assert_eq!(solution("#.#.### 1,2,3"), 0);
 
-    // assert_eq!(solution("???.### 1,1,3"), 1);
-    // assert_eq!(solution(".??..??...?##. 1,1,3"), 4);
-    // assert_eq!(solution("?#?#?#?#?#?#?#? 1,3,1,6"), 1);
-    // assert_eq!(solution("????.#...#... 4,1,1"), 1);
-    // assert_eq!(solution("????.######..#####. 1,6,5"), 4);
-    // assert_eq!(solution("??? 1"), 3);
-    assert_eq!(solution("??? 1,1"), 1);
+    assert_eq!(solution("???.### 1,1,3"), 1);
+    assert_eq!(solution(".??..??...?##. 1,1,3"), 4);
+    assert_eq!(solution("?#?#?#?#?#?#?#? 1,3,1,6"), 1);
+    assert_eq!(solution("????.#...#... 4,1,1"), 1);
+    assert_eq!(solution("????.######..#####. 1,6,5"), 4);
+    assert_eq!(solution("??? 1"), 3);
+    assert_eq!(solution("?.? 1,1"), 1);
     assert_eq!(solution("??????? 2,1"), 10);
     assert_eq!(solution("?###???????? 3,2,1"), 10);
 }
