@@ -5,6 +5,8 @@ pub enum Mark {
     Operational,
 }
 
+use std::collections::HashMap;
+
 use Mark::*;
 
 pub fn parse_line(line: &str) -> (Box<[Mark]>, Box<[usize]>) {
@@ -19,14 +21,30 @@ pub fn parse_line(line: &str) -> (Box<[Mark]>, Box<[usize]>) {
             _ => panic!(),
         })
         .collect();
-    let groups = groups.split(',').map(str::parse).map(Result::unwrap).collect();
+    let groups = groups
+        .split(',')
+        .map(str::parse)
+        .map(Result::unwrap)
+        .collect();
     (marks, groups)
 }
 
-pub fn possible_combinations(marks: &[Mark], current_group: usize, groups: &[usize]) -> usize {
+pub fn possible_combinations(
+    marks: &[Mark],
+    current_group: usize,
+    groups: &[usize],
+    cache: &mut HashMap<(usize, usize, usize), usize>,
+) -> usize {
+    if let Some(result) = cache.get(&(marks.len(), current_group, groups.len())) {
+        return *result;
+    }
     let Some(current_mark) = marks.first().cloned() else {
         let [group] = groups else {
-            return if current_group == 0 && groups.is_empty() { 1 } else { 0 };
+            return if current_group == 0 && groups.is_empty() {
+                1
+            } else {
+                0
+            };
         };
         return if current_group == *group { 1 } else { 0 };
     };
@@ -38,17 +56,17 @@ pub fn possible_combinations(marks: &[Mark], current_group: usize, groups: &[usi
     let mut result = 0;
     if let Damaged | Unknown = current_mark {
         if current_group < current_group_capacity {
-            result += possible_combinations(&marks[1..], current_group + 1, groups)
+            result += possible_combinations(&marks[1..], current_group + 1, groups, cache)
         };
     }
     if let Operational | Unknown = current_mark {
         if current_group == 0 {
-            result += possible_combinations(&marks[1..], 0, groups)
+            result += possible_combinations(&marks[1..], 0, groups, cache)
         } else if current_group == current_group_capacity {
-            result += possible_combinations(&marks[1..], 0, &groups[1..])
+            result += possible_combinations(&marks[1..], 0, &groups[1..], cache)
         }
     }
-
+    cache.insert((marks.len(), current_group, groups.len()), result);
     result
 }
 
@@ -72,6 +90,8 @@ pub fn solution(input: &str) -> u64 {
     input
         .lines()
         .map(parse_line)
-        .map(|(marks, groups)| possible_combinations(&marks[..], 0, &groups[..]) as u64)
+        .map(|(marks, groups)| {
+            possible_combinations(&marks[..], 0, &groups[..], &mut HashMap::new()) as u64
+        })
         .sum()
 }

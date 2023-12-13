@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::part_1::*;
 
 pub fn solution(input: &str) -> u64 {
@@ -7,8 +9,8 @@ pub fn solution(input: &str) -> u64 {
         .map(|(marks, groups)| {
             let marks = vec![&marks[..]; 5].join(&Mark::Unknown);
             let groups = groups.repeat(5);
-            eprint!("{marks:?} / {groups:?}");
-            let result = possible_combinations(&marks[..], 0, &groups[..]) as u64;
+            let result =
+                possible_combinations(&marks[..], 0, &groups[..], &mut HashMap::new()) as u64;
             eprintln!("= {result}");
             result
         })
