@@ -7,6 +7,10 @@ name = "advent_of_code_2023"
 version = "0.1.0"
 
 [[package]]
+name = "day_00"
+version = "0.1.0"
+
+[[package]]
 name = "day_01"
 version = "0.1.0"
 
