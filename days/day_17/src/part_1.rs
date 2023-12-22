@@ -5,25 +5,22 @@ use crate::direction::Direction::*;
 use crate::{grid::Grid, position::Position};
 
 pub fn minimize_loss(grid: &Grid, from: Position, to: Position) -> usize {
-    let mut visited = vec![vec![false; grid.m]; grid.n];
-    let mut cache = HashMap::new();
-
     fn local_min(
         grid: &Grid,
         from: Beam,
         to: Position,
         visited: &mut Vec<Vec<bool>>,
-        cache: &mut HashMap<Beam, Option<usize>>,
-    ) -> Option<usize> {
-        if let Some(&cached) = cache.get(&from) {
-            return cached;
+        cache: &mut HashMap<Beam, Option<(usize, Vec<Beam>)>>,
+    ) -> Option<(usize, Vec<Beam>)> {
+        if let Some(cached) = cache.get(&from) {
+            return cached.clone();
         }
         if from.pos == to {
-            return Some(grid[from.pos] as usize);
+            return Some((grid[from.pos] as usize, vec![from]));
         }
         visited[from.pos] = true;
 
-        let mut result = usize::MAX;
+        let mut result = (usize::MAX, vec![]);
         for direction in [North, East, South, West] {
             let Some(next) = grid.next_in_direction(from, direction) else {
                 continue;
@@ -34,28 +31,50 @@ pub fn minimize_loss(grid: &Grid, from: Position, to: Position) -> usize {
             let Some(local) = local_min(grid, next, to, visited, cache) else {
                 continue;
             };
-            result = result.min(local);
+            if result.0 > local.0 {
+                result = local
+            }
         }
 
         visited[from.pos] = false;
-        if result == usize::MAX {
+        if result.0 == usize::MAX {
             cache.insert(from, None);
             return None;
         }
-        let result = Some(result + grid[from.pos] as usize);
-        cache.insert(from, result);
+        result.1.push(from);
+        let result = Some((result.0 + grid[from.pos] as usize, result.1));
+        cache.insert(from, result.clone());
         result
     }
 
-    local_min(
+    let mut visited = vec![vec![false; grid.m]; grid.n];
+    let mut cache = HashMap::new();
+
+    let result_1 = local_min(
         grid,
-        Beam::new(Position::new(0, 0), North, 0),
+        Beam::new(Position::new(1, 0), South, 2),
         to,
         &mut visited,
         &mut cache,
     )
-    .unwrap()
-        - grid[from] as usize
+    .unwrap();
+
+    let mut visited = vec![vec![false; grid.m]; grid.n];
+    let mut cache = HashMap::new();
+
+    let result_2 = local_min(
+        grid,
+        Beam::new(Position::new(0, 1), West, 2),
+        to,
+        &mut visited,
+        &mut cache,
+    )
+    .unwrap();
+    let result = if result_1.0 < result_2.0 {result_1} else {result_2};
+
+    grid.display_path(&result.1);
+
+    result.0
 }
 
 pub fn solution(input: &str) -> u64 {
