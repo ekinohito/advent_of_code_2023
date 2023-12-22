@@ -2,6 +2,10 @@ const INPUT: &str = include_str!("input.txt");
 
 mod part_1;
 mod part_2;
+mod grid;
+mod position;
+mod direction;
+mod beam;
 
 
 fn main() {
