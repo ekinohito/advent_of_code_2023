@@ -1,6 +1,6 @@
-use std::ops::Index;
+use std::{ops::Index, collections::{HashMap, BTreeSet, HashSet}};
 
-use crate::{beam::Beam, direction::Direction, position::Position};
+use crate::{direction::Direction, position::Position, node::{Node, NodeInfo}};
 
 #[derive(Debug)]
 pub struct Grid {
@@ -16,38 +16,39 @@ impl Grid {
         Self { matrix, n, m }
     }
 
-    pub fn next_in_direction(&self, from: Beam, to: Direction) -> Option<Beam> {
-        if from.dir == to.opposite() || from.dir == to && from.dur == 0 {
-            return None;
-        }
-        let (di, dj) = to.delta();
-        let i = from.pos.i.checked_add_signed(di)?;
-        let j = from.pos.j.checked_add_signed(dj)?;
+    pub fn next_in_direction(&self, from: Position, dir: Direction) -> Option<Position> {
+        let (di, dj) = dir.delta();
+        let i = from.i.checked_add_signed(di)?;
+        let j = from.j.checked_add_signed(dj)?;
         if i >= self.n || j >= self.m {
             return None;
         }
-        let dur = if from.dir == to { from.dur - 1 } else { 2 };
-        Some(Beam::new(Position::new(i, j), to, dur))
+        Some(Position::new(i, j))
     }
 
-    pub fn display_path(&self, path: &Vec<Beam>) {
-        let mut map: Vec<Vec<String>> = self
-            .matrix
-            .iter()
-            .map(|row| row.iter().map(|e| e.to_string()).collect())
-            .collect();
-        for beam in path {
-            map[beam.pos] = match beam.dir {
-                Direction::North => "^",
-                Direction::East => ">",
-                Direction::South => "v",
-                Direction::West => "<",
-            }.to_string()
+    pub fn minimize_loss(&self, from: Position, to: Position) -> u64 {
+        let mut queue: BTreeSet<Node> = BTreeSet::from(Node::from_pos(from));
+        let mut result: HashMap<NodeInfo, Node> = HashMap::from(Node::from_pos(from).map(|node: Node| (node.info, node)));
+        let mut visited: HashSet<NodeInfo> = HashSet::new();
+        loop {
+            let node = queue.pop_first().unwrap();
+            if node.info.pos == to {
+                return node.heat
+            }
+            if !visited.insert(node.info) {
+                continue;
+            }
+            for node in node.connected_to(self).iter().flatten() {
+                if let Some(current_node) = result.get(&node.info) {
+                    let minimal_node = if current_node.heat > node.heat {node} else {current_node};
+                    queue.replace(*current_node);
+                    result.insert(node.info, *minimal_node);
+                } else {
+                    queue.insert(*node);
+                    result.insert(node.info, *node);
+                };
+            }
         }
-        map.iter().for_each(|row| {
-            row.iter().for_each(|e| print!("{e}"));
-            println!();
-        })
     }
 }
 

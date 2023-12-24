@@ -6,6 +6,7 @@ mod grid;
 mod position;
 mod direction;
 mod beam;
+mod node;
 
 
 fn main() {

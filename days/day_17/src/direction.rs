@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Direction {
     North,
     East,
@@ -14,6 +14,24 @@ impl Direction {
             East => West,
             South => North,
             West => East,
+        }
+    }
+
+    pub fn turn_left(&self) -> Self {
+        match self {
+            North => West,
+            East => North,
+            South => East,
+            West => South,
+        }
+    }
+
+    pub fn turn_right(&self) -> Self {
+        match self {
+            North => East,
+            East => South,
+            South => West,
+            West => North,
         }
     }
 
