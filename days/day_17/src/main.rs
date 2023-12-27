@@ -7,6 +7,7 @@ mod position;
 mod direction;
 mod beam;
 mod node;
+mod node_2;
 
 
 fn main() {

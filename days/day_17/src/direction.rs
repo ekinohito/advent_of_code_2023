@@ -8,15 +8,6 @@ pub enum Direction {
 use Direction::*;
 
 impl Direction {
-    pub fn opposite(&self) -> Self {
-        match self {
-            North => South,
-            East => West,
-            South => North,
-            West => East,
-        }
-    }
-
     pub fn turn_left(&self) -> Self {
         match self {
             North => West,
